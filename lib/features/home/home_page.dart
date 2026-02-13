@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../add_ingredient/add_ingredient_page.dart';
+import '../randomMenu/randomMenu.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
@@ -24,6 +25,13 @@ class HomePage extends StatelessWidget {
 
       body: Column(
         children: [
+          
+          const SizedBox(height: 10),
+          
+          // เรียกใช้ปุ่มที่เราสร้างไว้
+          _buildRouletteButton(context),
+          
+          // const SizedBox(height: 20),
           _buildSearch(),
           _buildCategories(),
           Expanded(child: _buildGrid()),
@@ -43,7 +51,6 @@ class HomePage extends StatelessWidget {
         },
         child: const Icon(Icons.add),
       ),
-
 
       // 🍳 Bottom Button
       bottomNavigationBar: Padding(
@@ -178,6 +185,56 @@ class HomePage extends StatelessWidget {
           ),
         );
       },
+    );
+  }
+
+  // 🎢 4. Roulette Button (Original Function) - เพิ่มความพรีเมียมด้วย Gradient
+  Widget _buildRouletteButton(BuildContext context) {
+    // ดึงขนาดหน้าจอ
+    double screenWidth = MediaQuery.of(context).size.width;
+
+    return Container(
+      width: screenWidth - 30,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(24),
+        gradient: const LinearGradient(
+          colors: [Color.fromARGB(255, 103, 240, 122), Color.fromARGB(255, 117, 255, 135)],
+          begin: Alignment.topLeft, end: Alignment.bottomRight,
+        ),
+        boxShadow: [
+          BoxShadow(color: primaryGreen.withOpacity(0.3), blurRadius: 12, offset: const Offset(0, 6)),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const FoodRoulettePage())),
+          borderRadius: BorderRadius.circular(24),
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Row(
+              children: [
+                const Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text("Mystery Dinner?", 
+                        style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+                      SizedBox(height: 4),
+                      Text("Let destiny choose your menu", style: TextStyle(fontSize: 14)),
+                    ],
+                  ),
+                ),
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: const BoxDecoration(color: Colors.black, shape: BoxShape.circle),
+                  child: const Icon(Icons.auto_awesome, color: Colors.white, size: 28),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
     );
   }
 }
