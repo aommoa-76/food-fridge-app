@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../add_ingredient/add_ingredient_page.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
@@ -32,9 +33,17 @@ class HomePage extends StatelessWidget {
       // ➕ Floating Add Button
       floatingActionButton: FloatingActionButton(
         backgroundColor: primaryGreen,
-        onPressed: () {},
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => const AddIngredientPage(),
+            ),
+          );
+        },
         child: const Icon(Icons.add),
       ),
+
 
       // 🍳 Bottom Button
       bottomNavigationBar: Padding(
@@ -125,28 +134,46 @@ class HomePage extends StatelessWidget {
       ),
       itemCount: items.length,
       itemBuilder: (context, i) {
-        return Card(
-          color: Colors.green.shade50, // 💚 card เขียวอ่อน
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-          ),
-          child: Padding(
-            padding: const EdgeInsets.all(12),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Expanded(
-                    child: Icon(Icons.kitchen,
-                        size: 40, color: Colors.green)),
-                Text(
-                  items[i]["name"]!,
-                  style: const TextStyle(fontWeight: FontWeight.bold),
-                ),
-                Text(
-                  items[i]["info"]!,
-                  style: const TextStyle(fontSize: 12),
-                ),
-              ],
+        return InkWell(
+          borderRadius: BorderRadius.circular(16),
+
+          /// ⭐ กดแล้วไปหน้า Add Ingredient
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => const AddIngredientPage(),
+              ),
+            );
+          },
+
+          child: Card(
+            color: Colors.green.shade50,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(12),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Expanded(
+                    child: Icon(
+                      Icons.kitchen,
+                      size: 40,
+                      color: Colors.green,
+                    ),
+                  ),
+                  Text(
+                    items[i]["name"]!,
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  Text(
+                    items[i]["info"]!,
+                    style: const TextStyle(fontSize: 12),
+                  ),
+                ],
+              ),
             ),
           ),
         );
