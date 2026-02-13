@@ -1,0 +1,156 @@
+import 'package:flutter/material.dart';
+
+class HomePage extends StatelessWidget {
+  const HomePage({super.key});
+
+  // 🌿 สีหลักของแอป
+  static const primaryGreen = Color.fromARGB(255, 96, 235, 115);
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        backgroundColor: primaryGreen,
+        title: const Text("My Fridge"),
+        centerTitle: true,
+        // actions: [
+        //   IconButton(
+        //     icon: const Icon(Icons.settings),
+        //     onPressed: () {},
+        //   )
+        // ],
+      ),
+
+      body: Column(
+        children: [
+          _buildSearch(),
+          _buildCategories(),
+          Expanded(child: _buildGrid()),
+        ],
+      ),
+
+      // ➕ Floating Add Button
+      floatingActionButton: FloatingActionButton(
+        backgroundColor: primaryGreen,
+        onPressed: () {},
+        child: const Icon(Icons.add),
+      ),
+
+      // 🍳 Bottom Button
+      bottomNavigationBar: Padding(
+        padding: const EdgeInsets.all(12),
+        child: ElevatedButton.icon(
+          onPressed: () {},
+          icon: const Icon(Icons.restaurant_menu),
+          label: const Text("Find Recipes for 6 Items"),
+          style: ElevatedButton.styleFrom(
+            backgroundColor: primaryGreen,
+            foregroundColor: Colors.black,
+            minimumSize: const Size(double.infinity, 56),
+          ),
+        ),
+      ),
+    );
+  }
+
+  // 🔍 Search
+  Widget _buildSearch() {
+    return Padding(
+      padding: const EdgeInsets.all(12),
+      child: TextField(
+        decoration: InputDecoration(
+          hintText: "Search ingredients...",
+          prefixIcon: const Icon(Icons.search),
+          filled: true,
+          fillColor: Colors.green.shade50, // 💚 ช่องค้นหาเขียวอ่อน
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide.none,
+          ),
+        ),
+      ),
+    );
+  }
+
+  // 🏷️ Categories
+  Widget _buildCategories() {
+    final categories = [
+      "All",
+      "Vegetables",
+      "Dairy",
+      "Proteins",
+      "Fruits"
+    ];
+
+    return SizedBox(
+      height: 50,
+      child: ListView.builder(
+        scrollDirection: Axis.horizontal,
+        itemCount: categories.length,
+        itemBuilder: (context, i) => Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 6),
+          child: Chip(
+            backgroundColor:
+                i == 0 ? primaryGreen : Colors.green.shade100,
+            label: Text(
+              categories[i],
+              style: TextStyle(
+                color: i == 0 ? Colors.black : Colors.green.shade900,
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  // 🧊 Grid Items
+  Widget _buildGrid() {
+    final items = [
+      {"name": "Carrots", "info": "Fresh • 800g"},
+      {"name": "Milk", "info": "Use soon • 1L"},
+      {"name": "Spinach", "info": "Expiring • 200g"},
+      {"name": "Chicken", "info": "Fresh • 500g"},
+      {"name": "Eggs", "info": "Fresh • 6 left"},
+      {"name": "Yogurt", "info": "Fresh • 1 cup"},
+    ];
+
+    return GridView.builder(
+      padding: const EdgeInsets.all(12),
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 2,
+        childAspectRatio: 1.1,
+        crossAxisSpacing: 10,
+        mainAxisSpacing: 10,
+      ),
+      itemCount: items.length,
+      itemBuilder: (context, i) {
+        return Card(
+          color: Colors.green.shade50, // 💚 card เขียวอ่อน
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(12),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Expanded(
+                    child: Icon(Icons.kitchen,
+                        size: 40, color: Colors.green)),
+                Text(
+                  items[i]["name"]!,
+                  style: const TextStyle(fontWeight: FontWeight.bold),
+                ),
+                Text(
+                  items[i]["info"]!,
+                  style: const TextStyle(fontSize: 12),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
