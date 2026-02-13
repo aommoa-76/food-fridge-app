@@ -9,227 +9,206 @@ class AddIngredientPage extends StatefulWidget {
 
 class _AddIngredientPageState extends State<AddIngredientPage> {
   static const primaryGreen = Color(0xFF60EB73);
+  final _formKey = GlobalKey<FormState>();
+  final TextEditingController _nameController = TextEditingController();
+  
+  String? _selectedCategory;
+  DateTime? _expiryDate;
 
-  final TextEditingController _searchController = TextEditingController();
+  final List<String> _categories = ["Protein", "Carbohydrate", "Vegetable", "Fruit", "Drink", "Other"];
 
-  String selectedCategory = "All";
-
-  final categories = ["All", "Drink", "Protein", "Vegetable", "Fruit", "Other"];
-
-  final ingredients = [
-    {"name": "Milk", "category": "Drink", "Date": 7},
-    {"name": "Juice", "category": "Drink"},
-    {"name": "Chicken", "category": "Protein", "Date": 3},
-    {"name": "Beef", "category": "Protein"},
-    {"name": "Spinach", "category": "Vegetable", "Date": 5},
-    {"name": "Carrot", "category": "Vegetable"},
-    {"name": "Apple", "category": "Fruit", "Date": 10},
-    {"name": "Banana", "category": "Fruit"},
-    {"name": "Other", "category": "Other"},
-  ];
-
-  List get filteredIngredients {
-    return ingredients.where((item) {
-      final matchCategory =
-          selectedCategory == "All" || item["category"] == selectedCategory;
-
-      final matchSearch = (item["name"] as String)
-        .toLowerCase()
-        .contains(_searchController.text.toLowerCase());
-
-
-      return matchCategory && matchSearch;
-    }).toList();
+  void _setQuickExpiry(int days) {
+    setState(() {
+      _expiryDate = DateTime.now().add(Duration(days: days));
+    });
+    // สั่ง validate ใหม่เพื่อลบสีแดงออกทันทีที่เลือก
+    _formKey.currentState?.validate();
   }
 
   @override
   Widget build(BuildContext context) {
+    // ดึงค่าสี Error มาตรฐานของ Theme มาใช้เพื่อให้แดงเหมือนกันเป๊ะ
+    final errorColor = Theme.of(context).colorScheme.error;
+    final errorStyle = TextStyle(color: errorColor, fontSize: 12);
+
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Add Ingredient"),
+        title: const Text("Add New Ingredient"),
         backgroundColor: primaryGreen,
+        elevation: 0,
       ),
-      body: Column(
-        children: [
-          _buildSearch(),
-          _buildCategories(),
-          Expanded(child: _buildIngredientList()),
-        ],
-      ),
-    );
-  }
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(20),
+        child: Form(
+          key: _formKey,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text("Ingredient name", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+              const SizedBox(height: 10),
+              
+              // 1. Name Field
+              TextFormField(
+                controller: _nameController,
+                decoration: InputDecoration(
+                  hintText: "e.g. eggs, milk, tomatoes",
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                  prefixIcon: const Icon(Icons.fastfood),
+                ),
+                validator: (value) => (value == null || value.isEmpty) ? "Please enter ingredient name" : null,
+              ),
 
-  // 🔍 SEARCH
-  Widget _buildSearch() {
-    return Padding(
-      padding: const EdgeInsets.all(12),
-      child: TextField(
-        controller: _searchController,
-        onChanged: (_) => setState(() {}),
-        decoration: InputDecoration(
-          hintText: "Search ingredient...",
-          prefixIcon: const Icon(Icons.search),
-          filled: true,
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: BorderSide.none,
+              const SizedBox(height: 20),
+
+              // 2. Category Field
+              const Text("Category", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+              const SizedBox(height: 10),
+              FormField<String>(
+                validator: (_) => _selectedCategory == null ? "Please select a category" : null,
+                builder: (FormFieldState<String> state) {
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      LayoutBuilder(
+                        builder: (context, constraints) {
+                          return DropdownMenu<String>(
+                            width: constraints.maxWidth,
+                            menuHeight: 300,
+                            inputDecorationTheme: InputDecorationTheme(
+                              isDense: true,
+                              contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                              // ปรับขอบให้เป็นสีแดงตามสถานะ state.hasError
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                borderSide: BorderSide(color: state.hasError ? errorColor : Colors.grey),
+                              ),
+                              enabledBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                borderSide: BorderSide(color: state.hasError ? errorColor : Colors.grey),
+                              ),
+                              focusedBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                borderSide: BorderSide(color: state.hasError ? errorColor : primaryGreen, width: 2),
+                              ),
+                            ),
+                            onSelected: (val) {
+                              setState(() => _selectedCategory = val);
+                              state.didChange(val);
+                            },
+                            dropdownMenuEntries: _categories.map((cat) {
+                              return DropdownMenuEntry<String>(
+                                value: cat,
+                                label: cat,
+                                style: MenuItemButton.styleFrom(minimumSize: Size(constraints.maxWidth, 45)),
+                              );
+                            }).toList(),
+                          );
+                        },
+                      ),
+                      if (state.hasError)
+                        Padding(
+                          padding: const EdgeInsets.only(left: 12, top: 8),
+                          child: Text(state.errorText!, style: errorStyle),
+                        ),
+                    ],
+                  );
+                },
+              ),
+
+              const SizedBox(height: 20),
+
+              // 3. Expiry Date Field
+              const Text("Expiry Date", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+              const SizedBox(height: 10),
+              FormField<DateTime>(
+                validator: (_) => _expiryDate == null ? "Please pick a date or use quick select" : null,
+                builder: (FormFieldState<DateTime> state) {
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      ListTile(
+                        shape: RoundedRectangleBorder(
+                          side: BorderSide(color: state.hasError ? errorColor : Colors.grey),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        leading: Icon(Icons.calendar_today, color: state.hasError ? errorColor : Colors.grey),
+                        title: Text(
+                          _expiryDate == null ? "Select Date" : _expiryDate.toString().split(" ")[0],
+                          style: TextStyle(color: state.hasError ? errorColor : Colors.black87),
+                        ),
+                        onTap: () async {
+                          await _pickDate();
+                          state.didChange(_expiryDate);
+                        },
+                        trailing: Icon(Icons.arrow_drop_down, color: state.hasError ? errorColor : Colors.grey),
+                      ),
+                      if (state.hasError)
+                        Padding(
+                          padding: const EdgeInsets.only(left: 12, top: 8),
+                          child: Text(state.errorText!, style: errorStyle),
+                        ),
+                    ],
+                  );
+                },
+              ),
+
+              const SizedBox(height: 15),
+
+              // 4. Quick Select
+              const Text("Don't know expiry date? Quick select:", 
+                style: TextStyle(fontSize: 13, color: Colors.grey, fontStyle: FontStyle.italic)),
+              const SizedBox(height: 8),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: [
+                  _quickDateBtn("None", 0),
+                ],
+              ),
+
+              const SizedBox(height: 40),
+
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: primaryGreen,
+                  foregroundColor: Colors.black,
+                  minimumSize: const Size(double.infinity, 60),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+                ),
+                onPressed: _submitForm,
+                child: const Text("SAVE TO FRIDGE", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+              ),
+            ],
           ),
         ),
       ),
     );
   }
 
-  // 🏷️ CATEGORY CHIPS
-  Widget _buildCategories() {
-    return SizedBox(
-      height: 50,
-      child: ListView.builder(
-        scrollDirection: Axis.horizontal,
-        itemCount: categories.length,
-        itemBuilder: (context, i) {
-          final cat = categories[i];
-          final selected = cat == selectedCategory;
-
-          return Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 6),
-            child: ChoiceChip(
-              label: Text(cat),
-              selected: selected,
-              onSelected: (_) {
-                setState(() => selectedCategory = cat);
-              },
-              selectedColor: primaryGreen,
-            ),
-          );
-        },
+  Widget _quickDateBtn(String label, int days) {
+    return OutlinedButton(
+      style: OutlinedButton.styleFrom(
+        foregroundColor: Colors.green.shade700,
+        side: BorderSide(color: Colors.green.shade200),
       ),
+      onPressed: () => _setQuickExpiry(days),
+      child: Text(label),
     );
   }
 
-  // 🧊 INGREDIENT LIST
-  Widget _buildIngredientList() {
-    return ListView.builder(
-      padding: const EdgeInsets.all(12),
-      itemCount: filteredIngredients.length,
-      itemBuilder: (context, i) {
-        final item = filteredIngredients[i];
-
-        return Card(
-          color: Colors.green.shade50,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-          ),
-          child: ListTile(
-            leading: const Icon(Icons.kitchen, color: Colors.green),
-            title: Text(item["name"]),
-            onTap: () => _showIngredientBottomSheet(item),
-          ),
-        );
-      },
-    );
-  }
-
-  // 🍳 OPEN BOTTOM SHEET
-  void _showIngredientBottomSheet(Map item) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      builder: (_) => _IngredientDetailSheet(item: item),
-    );
-  }
-}
-
-class _IngredientDetailSheet extends StatefulWidget {
-  final Map item;
-
-  const _IngredientDetailSheet({required this.item});
-
-  @override
-  State<_IngredientDetailSheet> createState() =>
-      _IngredientDetailSheetState();
-}
-
-class _IngredientDetailSheetState extends State<_IngredientDetailSheet> {
-  DateTime? expiryDate;
-
-  @override
-  void initState() {
-    super.initState();
-
-    // ⭐ AUTO CALCULATE IF HAS Date
-    if (widget.item.containsKey("Date")) {
-      final days = widget.item["Date"] as int;
-      expiryDate = DateTime.now().add(Duration(days: days));
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
-      child: Wrap(
-        children: [
-          Text(
-            widget.item["name"],
-            style: const TextStyle(
-              fontSize: 22,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-
-          const SizedBox(height: 20),
-
-          // 📅 Expiry picker
-          ListTile(
-            title: const Text("Expiry date"),
-            subtitle: Text(
-              expiryDate == null
-                  ? "Select date"
-                  : expiryDate.toString().split(" ")[0],
-            ),
-            trailing: const Icon(Icons.calendar_today),
-            onTap: _pickDate,
-          ),
-
-          // ⭐ hint if auto
-          if (widget.item.containsKey("Date"))
-            const Padding(
-              padding: EdgeInsets.only(left: 16),
-              child: Text(
-                "Auto calculated from shelf life (editable)",
-                style: TextStyle(fontSize: 12, color: Colors.grey),
-              ),
-            ),
-
-          const SizedBox(height: 24),
-
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF60EB73),
-              foregroundColor: Colors.black,
-              minimumSize: const Size(double.infinity, 56),
-            ),
-            onPressed: () {
-              // TODO: save to fridge database
-              Navigator.pop(context);
-            },
-            child: const Text("Add to Fridge"),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _pickDate() async {
+  Future<void> _pickDate() async {
     final picked = await showDatePicker(
       context: context,
       firstDate: DateTime.now(),
       lastDate: DateTime(2100),
-      initialDate: expiryDate ?? DateTime.now(),
+      initialDate: _expiryDate ?? DateTime.now(),
     );
+    if (picked != null) setState(() => _expiryDate = picked);
+  }
 
-    if (picked != null) {
-      setState(() => expiryDate = picked);
+  void _submitForm() {
+    if (_formKey.currentState!.validate()) {
+      // บันทึกข้อมูลได้เมื่อผ่าน Validation ทั้งหมด (ชื่อ, ประเภท, และวันหมดอายุอย่างใดอย่างหนึ่ง)
+      Navigator.pop(context);
     }
   }
 }
