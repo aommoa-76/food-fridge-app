@@ -2,14 +2,25 @@ import 'package:flutter/material.dart';
 import '../add_ingredient/add_ingredient_page.dart';
 import '../randomMenu/randomMenu.dart';
 
-class HomePage extends StatelessWidget {
+import '../../core/models/ingredient.dart';
+import "../../core/mock/mock_user_ingredients.dart";
+
+class HomePage extends StatefulWidget {
   const HomePage({super.key});
+
+  @override
+  State<HomePage> createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
+  String _selectedCategory = "All";
 
   // 🌿 สีหลักของแอป
   static const primaryGreen = Color.fromARGB(255, 96, 235, 115);
-
+  
   @override
   Widget build(BuildContext context) {
+    
     return Scaffold(
       appBar: AppBar(
         backgroundColor: primaryGreen,
@@ -31,9 +42,11 @@ class HomePage extends StatelessWidget {
           // เรียกใช้ปุ่มที่เราสร้างไว้
           _buildRouletteButton(context),
           
-          // const SizedBox(height: 20),
-          _buildSearch(),
-          _buildCategories(),
+          const SizedBox(height: 10),
+          _buildSearch(context),
+
+          const SizedBox(height: 5),
+          _buildCategories(context),
           Expanded(child: _buildGrid()),
         ],
       ),
@@ -57,49 +70,22 @@ class HomePage extends StatelessWidget {
   }
 
   // 🔍 Search
-  Widget _buildSearch() {
-    return Padding(
-      padding: const EdgeInsets.all(12),
-      child: TextField(
-        decoration: InputDecoration(
-          hintText: "Search ingredients...",
-          prefixIcon: const Icon(Icons.search),
-          filled: true,
-          fillColor: Colors.green.shade50, // 💚 ช่องค้นหาเขียวอ่อน
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: BorderSide.none,
-          ),
-        ),
-      ),
-    );
-  }
+  Widget _buildSearch(BuildContext context) {
+    double boxWidth = MediaQuery.of(context).size.width - 30;
 
-  // 🏷️ Categories
-  Widget _buildCategories() {
-    final categories = [
-      "All",
-      "Vegetables",
-      "Dairy",
-      "Proteins",
-      "Fruits"
-    ];
-
-    return SizedBox(
-      height: 50,
-      child: ListView.builder(
-        scrollDirection: Axis.horizontal,
-        itemCount: categories.length,
-        itemBuilder: (context, i) => Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 6),
-          child: Chip(
-            backgroundColor:
-                i == 0 ? primaryGreen : Colors.green.shade100,
-            label: Text(
-              categories[i],
-              style: TextStyle(
-                color: i == 0 ? Colors.black : Colors.green.shade900,
-              ),
+    return Center(
+      child: SizedBox(
+        width: boxWidth,
+        child: TextField(
+          decoration: InputDecoration(
+            hintText: "Search ingredients...",
+            prefixIcon: const Icon(Icons.search, color: Colors.green),
+            filled: true,
+            fillColor: Colors.green.shade50,
+            contentPadding: const EdgeInsets.symmetric(vertical: 15),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide.none,
             ),
           ),
         ),
@@ -107,16 +93,81 @@ class HomePage extends StatelessWidget {
     );
   }
 
+  // 🏷️ Categories
+  Widget _buildCategories(BuildContext context) {
+    final categories = [
+      "All",
+      "Protein",
+      "Carbohydrate",
+      "Vegetables",
+      "Fruit",
+      "Drink",
+      "Other"
+    ];
+
+    double boxWidth = MediaQuery.of(context).size.width - 20;
+
+    return Center(
+      child: SizedBox(
+        height: 60,
+        width: boxWidth,
+        child: ListView.builder(
+          scrollDirection: Axis.horizontal,
+          itemCount: categories.length,
+          itemBuilder: (context, i) {
+            final categoryName = categories[i];
+            final bool isSelected = _selectedCategory == categoryName;
+
+            return Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 4),
+              child: ChoiceChip(
+                label: Text(categoryName),
+                selected: isSelected,
+                selectedColor: primaryGreen,
+                backgroundColor: Colors.green.shade50,
+                labelStyle: TextStyle(
+                  color: isSelected ? Colors.black : Colors.green.shade900,
+                  fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                ),
+                // 4. เมื่อคลิกให้เปลี่ยนค่า _selectedCategory และสั่งวาดหน้าจอใหม่
+                onSelected: (bool selected) {
+                  setState(() {
+                    _selectedCategory = categoryName;
+                  });
+                },
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                side: BorderSide(color: isSelected ? Colors.transparent : Colors.green.shade100),
+              ),
+            );
+          },
+        ),
+      ),
+    );
+  }
+
   // 🧊 Grid Items
   Widget _buildGrid() {
-    final items = [
-      {"name": "Carrots", "info": "Fresh • 800g"},
-      {"name": "Milk", "info": "Use soon • 1L"},
-      {"name": "Spinach", "info": "Expiring • 200g"},
-      {"name": "Chicken", "info": "Fresh • 500g"},
-      {"name": "Eggs", "info": "Fresh • 6 left"},
-      {"name": "Yogurt", "info": "Fresh • 1 cup"},
-    ];
+    // 5. Logic การกรองข้อมูล
+    final List<Ingredient> allItems = mockUserIngredients;
+    
+    // ถ้าเลือก "All" ให้เอามาหมด แต่ถ้าไม่ใช่ ให้กรองเอาเฉพาะ Category ที่ตรงกัน
+    final List<Ingredient> filteredItems = _selectedCategory == "All"
+        ? allItems
+        : allItems.where((item) => item.category == _selectedCategory).toList();
+
+    // กรณีไม่มีข้อมูลในหมวดหมู่นั้นๆ
+    if (filteredItems.isEmpty) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.inventory_2_outlined, size: 50, color: Colors.grey.shade400),
+            const SizedBox(height: 10),
+            Text("No ingredients in $_selectedCategory", style: const TextStyle(color: Colors.grey)),
+          ],
+        ),
+      );
+    }
 
     return GridView.builder(
       padding: const EdgeInsets.all(12),
@@ -126,45 +177,25 @@ class HomePage extends StatelessWidget {
         crossAxisSpacing: 10,
         mainAxisSpacing: 10,
       ),
-      itemCount: items.length,
+      itemCount: filteredItems.length,
       itemBuilder: (context, i) {
+        final item = filteredItems[i];
         return InkWell(
           borderRadius: BorderRadius.circular(16),
-
-          /// ⭐ กดแล้วไปหน้า Add Ingredient
-          onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (_) => const AddIngredientPage(),
-              ),
-            );
-          },
-
+          onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AddIngredientPage())),
           child: Card(
             color: Colors.green.shade50,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
-            ),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
             child: Padding(
               padding: const EdgeInsets.all(12),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Expanded(
-                    child: Icon(
-                      Icons.kitchen,
-                      size: 40,
-                      color: Colors.green,
-                    ),
-                  ),
+                  const Expanded(child: Icon(Icons.kitchen, size: 40, color: Colors.green)),
+                  Text(item.name, style: const TextStyle(fontWeight: FontWeight.bold)),
                   Text(
-                    items[i]["name"]!,
-                    style: const TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                  Text(
-                    items[i]["info"]!,
-                    style: const TextStyle(fontSize: 12),
+                    "Expired: ${item.expiryDate.day}/${item.expiryDate.month}/${item.expiryDate.year}",
+                    style: const TextStyle(fontSize: 11),
                   ),
                 ],
               ),
