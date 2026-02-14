@@ -3,7 +3,9 @@ import '../add_ingredient/add_ingredient_page.dart';
 import '../randomMenu/randomMenu.dart';
 
 import '../../core/models/ingredient.dart';
-import "../../core/mock/mock_user_ingredients.dart";
+import "../../core/mock/mock_user_ingredients.dart";  
+
+import '../../app/logout.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -32,6 +34,30 @@ class _HomePageState extends State<HomePage> {
         //     onPressed: () {},
         //   )
         // ],
+        actions: [
+          Padding(
+            padding: const EdgeInsets.only(right: 8.0),
+            child: ElevatedButton.icon(
+              // 🔥 เรียกใช้ไฟล์กลาง ง่ายและสะอาด
+              onPressed: () => AuthService.logout(context), 
+              
+              icon: const Icon(Icons.logout, size: 18),
+              label: const Text('Logout'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.white,
+                foregroundColor: const Color.fromARGB(255, 69, 148, 79),
+                elevation: 0,
+                padding: const EdgeInsets.symmetric(horizontal: 12),
+              ).copyWith(
+                overlayColor: WidgetStateProperty.resolveWith<Color?>(
+                  (states) => states.contains(WidgetState.pressed) 
+                      ? Colors.green.withOpacity(0.2) 
+                      : null,
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
 
       body: Column(

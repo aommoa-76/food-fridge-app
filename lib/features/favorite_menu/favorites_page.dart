@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../core/state/favorites_state.dart';
 import '../recipe/recipe_card.dart';
 import '../recipe/recipe_detail_page.dart';
+import '../../app/logout.dart';
 
 class FavoritesPage extends StatefulWidget {
   const FavoritesPage({super.key});
@@ -24,6 +25,30 @@ class _FavoritesPageState extends State<FavoritesPage> {
         backgroundColor: primaryGreen,
         title: const Text("Favorite Menu"),
         centerTitle: true,
+        actions: [
+          Padding(
+            padding: const EdgeInsets.only(right: 8.0),
+            child: ElevatedButton.icon(
+              // 🔥 เรียกใช้ไฟล์กลาง ง่ายและสะอาด
+              onPressed: () => AuthService.logout(context), 
+              
+              icon: const Icon(Icons.logout, size: 18),
+              label: const Text('Logout'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.white,
+                foregroundColor: const Color.fromARGB(255, 69, 148, 79),
+                elevation: 0,
+                padding: const EdgeInsets.symmetric(horizontal: 12),
+              ).copyWith(
+                overlayColor: WidgetStateProperty.resolveWith<Color?>(
+                  (states) => states.contains(WidgetState.pressed) 
+                      ? Colors.green.withOpacity(0.2) 
+                      : null,
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
       body: favorites.isEmpty
           ? const Center(

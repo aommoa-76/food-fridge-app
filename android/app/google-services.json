@@ -1,0 +1,54 @@
+{
+  "project_info": {
+    "project_number": "641139638317",
+    "project_id": "food-fridge-50d20",
+    "storage_bucket": "food-fridge-50d20.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:641139638317:android:b51be3bb04c6588a3c38a4",
+        "android_client_info": {
+          "package_name": "com.example.foodfridge_app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "641139638317-lrnsghdb6acg3sahkvea9gcoe0qe4ove.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.foodfridge_app",
+            "certificate_hash": "13715bec631d0fedd78cb264ee4e8b4dcad66247"
+          }
+        },
+        {
+          "client_id": "641139638317-j71upcpeadp7lt7hss9a9hs60ri5401u.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCesBvWBbgegU8_D7OT2gnhxyZCpuE1rPw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "641139638317-j71upcpeadp7lt7hss9a9hs60ri5401u.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "641139638317-jff7g1sjqajof71b2m9uhmi1alkfmokt.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.foodfridgeApp"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

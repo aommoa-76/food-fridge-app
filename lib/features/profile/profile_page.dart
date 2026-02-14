@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../app/logout.dart';
 
 class ProfilePage extends StatelessWidget {
   const ProfilePage({super.key});
@@ -19,6 +20,30 @@ class ProfilePage extends StatelessWidget {
         //     onPressed: () {},
         //   )
         // ],
+        actions: [
+          Padding(
+            padding: const EdgeInsets.only(right: 8.0),
+            child: ElevatedButton.icon(
+              // 🔥 เรียกใช้ไฟล์กลาง ง่ายและสะอาด
+              onPressed: () => AuthService.logout(context), 
+              
+              icon: const Icon(Icons.logout, size: 18),
+              label: const Text('Logout'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.white,
+                foregroundColor: const Color.fromARGB(255, 69, 148, 79),
+                elevation: 0,
+                padding: const EdgeInsets.symmetric(horizontal: 12),
+              ).copyWith(
+                overlayColor: WidgetStateProperty.resolveWith<Color?>(
+                  (states) => states.contains(WidgetState.pressed) 
+                      ? Colors.green.withOpacity(0.2) 
+                      : null,
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
 
       body: SingleChildScrollView(
