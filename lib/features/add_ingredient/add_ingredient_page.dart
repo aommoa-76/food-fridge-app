@@ -1,4 +1,6 @@
+import 'dart:io'; // สำหรับ File
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart'; // อย่าลืม import ตัวนี้
 
 class AddIngredientPage extends StatefulWidget {
   const AddIngredientPage({super.key});
@@ -14,22 +16,66 @@ class _AddIngredientPageState extends State<AddIngredientPage> {
   
   String? _selectedCategory;
   DateTime? _expiryDate;
+  
+  // 📸 ตัวแปรสำหรับเก็บรูปภาพ
+  File? _image; 
+  final ImagePicker _picker = ImagePicker();
 
   final List<String> _categories = ["Protein", "Carbohydrate", "Vegetable", "Fruit", "Drink", "Other"];
+
+  // ฟังก์ชันเลือกรูปภาพ
+  Future<void> _pickImage(ImageSource source) async {
+    final XFile? pickedFile = await _picker.pickImage(source: source);
+    if (pickedFile != null) {
+      setState(() {
+        _image = File(pickedFile.path);
+      });
+    }
+  }
+
+  // แสดง Modal เลือกแหล่งที่มาของรูป
+  void _showImageSourceActionSheet(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+      builder: (context) => SafeArea(
+        child: Wrap(
+          children: [
+            ListTile(
+              leading: const Icon(Icons.photo_library),
+              title: const Text('Photo Gallery'),
+              onTap: () {
+                _pickImage(ImageSource.gallery);
+                Navigator.of(context).pop();
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.camera_alt),
+              title: const Text('Camera'),
+              onTap: () {
+                _pickImage(ImageSource.camera);
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 
   void _setQuickExpiry(int days) {
     setState(() {
       _expiryDate = DateTime.now().add(Duration(days: days));
     });
-    // สั่ง validate ใหม่เพื่อลบสีแดงออกทันทีที่เลือก
     _formKey.currentState?.validate();
   }
 
   @override
   Widget build(BuildContext context) {
-    // ดึงค่าสี Error มาตรฐานของ Theme มาใช้เพื่อให้แดงเหมือนกันเป๊ะ
     final errorColor = Theme.of(context).colorScheme.error;
     final errorStyle = TextStyle(color: errorColor, fontSize: 12);
+
+    double pictureWidth = MediaQuery.of(context).size.width - 30;
 
     return Scaffold(
       appBar: AppBar(
@@ -44,10 +90,48 @@ class _AddIngredientPageState extends State<AddIngredientPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              // 🖼️ ส่วนแสดงและเลือกรูปภาพ
+              Center(
+                child: GestureDetector(
+                  onTap: () => _showImageSourceActionSheet(context),
+                  child: Stack(
+                    children: [
+                      Container(
+                        width: pictureWidth,
+                        height: 200,
+                        decoration: BoxDecoration(
+                          color: Colors.green.shade50,
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(color: primaryGreen.withOpacity(0.5), width: 2),
+                          image: _image != null 
+                            ? DecorationImage(image: FileImage(_image!), fit: BoxFit.cover) 
+                            : null,
+                        ),
+                        child: _image == null 
+                          ? const Icon(Icons.add_a_photo, size: 40, color: Colors.green) 
+                          : null,
+                      ),
+                      if (_image != null)
+                        Positioned(
+                          right: -10,
+                          top: -10,
+                          child: IconButton(
+                            icon: const Icon(Icons.cancel, color: Colors.red),
+                            onPressed: () => setState(() => _image = null),
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 10),
+              const Center(child: Text("Tap to add photo", style: TextStyle(color: Colors.grey, fontSize: 12))),
+              
+              const SizedBox(height: 20),
+
               const Text("Ingredient name", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
               const SizedBox(height: 10),
               
-              // 1. Name Field
               TextFormField(
                 controller: _nameController,
                 decoration: InputDecoration(
@@ -60,7 +144,6 @@ class _AddIngredientPageState extends State<AddIngredientPage> {
 
               const SizedBox(height: 20),
 
-              // 2. Category Field
               const Text("Category", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
               const SizedBox(height: 10),
               FormField<String>(
@@ -73,11 +156,9 @@ class _AddIngredientPageState extends State<AddIngredientPage> {
                         builder: (context, constraints) {
                           return DropdownMenu<String>(
                             width: constraints.maxWidth,
-                            menuHeight: 300,
                             inputDecorationTheme: InputDecorationTheme(
                               isDense: true,
                               contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                              // ปรับขอบให้เป็นสีแดงตามสถานะ state.hasError
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(12),
                                 borderSide: BorderSide(color: state.hasError ? errorColor : Colors.grey),
@@ -85,10 +166,6 @@ class _AddIngredientPageState extends State<AddIngredientPage> {
                               enabledBorder: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(12),
                                 borderSide: BorderSide(color: state.hasError ? errorColor : Colors.grey),
-                              ),
-                              focusedBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(12),
-                                borderSide: BorderSide(color: state.hasError ? errorColor : primaryGreen, width: 2),
                               ),
                             ),
                             onSelected: (val) {
@@ -117,7 +194,6 @@ class _AddIngredientPageState extends State<AddIngredientPage> {
 
               const SizedBox(height: 20),
 
-              // 3. Expiry Date Field
               const Text("Expiry Date", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
               const SizedBox(height: 10),
               FormField<DateTime>(
@@ -154,18 +230,15 @@ class _AddIngredientPageState extends State<AddIngredientPage> {
 
               const SizedBox(height: 15),
 
-              // 4. Quick Select
-              const Text("Don't know expiry date? Quick select:", 
-                style: TextStyle(fontSize: 13, color: Colors.grey, fontStyle: FontStyle.italic)),
+              const Text("Quick select:", style: TextStyle(fontSize: 13, color: Colors.grey)),
               const SizedBox(height: 8),
               Row(
-                mainAxisAlignment: MainAxisAlignment.start,
                 children: [
                   _quickDateBtn("None", 0),
                 ],
               ),
 
-              const SizedBox(height: 40),
+              const SizedBox(height: 20),
 
               ElevatedButton(
                 style: ElevatedButton.styleFrom(
@@ -177,6 +250,8 @@ class _AddIngredientPageState extends State<AddIngredientPage> {
                 onPressed: _submitForm,
                 child: const Text("SAVE TO FRIDGE", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
               ),
+
+              const SizedBox(height: 40),
             ],
           ),
         ),
@@ -186,10 +261,6 @@ class _AddIngredientPageState extends State<AddIngredientPage> {
 
   Widget _quickDateBtn(String label, int days) {
     return OutlinedButton(
-      style: OutlinedButton.styleFrom(
-        foregroundColor: Colors.green.shade700,
-        side: BorderSide(color: Colors.green.shade200),
-      ),
       onPressed: () => _setQuickExpiry(days),
       child: Text(label),
     );
@@ -207,7 +278,8 @@ class _AddIngredientPageState extends State<AddIngredientPage> {
 
   void _submitForm() {
     if (_formKey.currentState!.validate()) {
-      // บันทึกข้อมูลได้เมื่อผ่าน Validation ทั้งหมด (ชื่อ, ประเภท, และวันหมดอายุอย่างใดอย่างหนึ่ง)
+      // เมื่อกด Save คุณสามารถเข้าถึงรูปภาพได้จากตัวแปร _image
+      print("Image path: ${_image?.path}");
       Navigator.pop(context);
     }
   }
