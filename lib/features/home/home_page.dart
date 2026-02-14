@@ -52,20 +52,7 @@ class HomePage extends StatelessWidget {
         child: const Icon(Icons.add),
       ),
 
-      // 🍳 Bottom Button
-      bottomNavigationBar: Padding(
-        padding: const EdgeInsets.all(12),
-        child: ElevatedButton.icon(
-          onPressed: () {},
-          icon: const Icon(Icons.restaurant_menu),
-          label: const Text("Find Recipes for 6 Items"),
-          style: ElevatedButton.styleFrom(
-            backgroundColor: primaryGreen,
-            foregroundColor: Colors.black,
-            minimumSize: const Size(double.infinity, 56),
-          ),
-        ),
-      ),
+      
     );
   }
 
