@@ -7,6 +7,7 @@ import '../../core/state/favorites_state.dart';
 import '../recipe/recipe_card.dart';
 import '../recipe/recipe_detail_page.dart';
 import 'dart:async';
+
 Timer? _timer;
 
 

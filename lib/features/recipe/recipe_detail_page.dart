@@ -6,11 +6,26 @@ import 'widgets/recipe_info_cards.dart';
 import 'widgets/ingredient_card.dart';
 import 'widgets/step_tile.dart';
 import 'utils/launch_youtube.dart';
+import '../../core/mock/mock_user_ingredients.dart';
 
 class RecipeDetailPage extends StatelessWidget {
   final Recipe recipe;
 
   const RecipeDetailPage({super.key, required this.recipe});
+  bool isInFridge(String recipeIngredient) {
+    final r = recipeIngredient.toLowerCase();
+
+    for (final i in mockUserIngredients) {
+      final m = i.name.toLowerCase();
+
+      // ✔️ match แบบ contains ทั้งสองทาง
+      if (r.contains(m) || m.contains(r)) {
+        return i.inFridge;
+      }
+    }
+
+    return false;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -77,9 +92,14 @@ class RecipeDetailPage extends StatelessWidget {
 
             const SizedBox(height: 12),
 
-            ...recipe.ingredients.map(
-              (e) => IngredientCard(ingredient: e),
-            ),
+            // หา ingredient ว่าที่มี ตรงตาม recipe ไหม ถ้ามี → ✔️ ถ้าไม่มี → ❌ 
+            // ปัญหาคือ มัน ขึ้นไม่มีหมด
+            ...recipe.ingredients.map((e) {
+              return IngredientCard(
+                ingredient: e,
+                inFridge: isInFridge(e),
+              );
+            }),
 
             const SizedBox(height: 32),
 

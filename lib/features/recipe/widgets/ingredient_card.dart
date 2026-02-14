@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
-
 class IngredientCard extends StatelessWidget {
   final String ingredient;
+  final bool inFridge;
 
-  const IngredientCard({super.key, required this.ingredient});
+  const IngredientCard({
+    super.key,
+    required this.ingredient,
+    required this.inFridge,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -30,7 +34,12 @@ class IngredientCard extends StatelessWidget {
                 style: const TextStyle(fontWeight: FontWeight.w600),
               ),
             ),
-            const Icon(Icons.check_circle, color: primaryGreen)
+
+            // 🔹 ถ้ามี → ✔️ ถ้าไม่มี → ❌
+            Icon(
+              inFridge ? Icons.check_circle : Icons.cancel,
+              color: inFridge ? primaryGreen : Colors.red,
+            )
           ],
         ),
       ),
