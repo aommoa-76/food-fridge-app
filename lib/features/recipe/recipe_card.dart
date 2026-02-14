@@ -71,14 +71,27 @@ class RecipeCard extends StatelessWidget {
                 Positioned(
                   top: 10,
                   right: 10,
-                  child: IconButton(
-                    icon: Icon(
-                      isFavorite
-                          ? Icons.favorite
-                          : Icons.favorite_border,
-                      color: Colors.red,
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.9),
+                      shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black26,
+                          blurRadius: 6,
+                          offset: Offset(0, 2),
+                        ),
+                      ],
                     ),
-                    onPressed: onFavoriteToggle,
+                    child: IconButton(
+                      icon: Icon(
+                        isFavorite
+                            ? Icons.favorite
+                            : Icons.favorite_border,
+                        color: Colors.red,
+                      ),
+                      onPressed: onFavoriteToggle,
+                    ),
                   ),
                 ),
               ],

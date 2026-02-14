@@ -6,6 +6,9 @@ import '../../core/models/recipe.dart';
 import '../../core/state/favorites_state.dart';
 import '../recipe/recipe_card.dart';
 import '../recipe/recipe_detail_page.dart';
+import 'dart:async';
+Timer? _timer;
+
 
 class MatchMenuPage extends StatefulWidget {
   const MatchMenuPage({super.key});
@@ -16,6 +19,7 @@ class MatchMenuPage extends StatefulWidget {
 
 class _MatchMenuPageState extends State<MatchMenuPage> {
   late List<Recipe> matchedRecipes;
+  static const primaryGreen = Color.fromARGB(255, 96, 235, 115);
 
   final FavoritesState _favoritesState =
     FavoritesState.instance;
@@ -23,22 +27,49 @@ class _MatchMenuPageState extends State<MatchMenuPage> {
   @override
   void initState() {
     super.initState();
+    
 
     matchedRecipes =
         matchRecipes(mockRecipeList, mockUserIngredients);
+
+    _timer = Timer.periodic(
+      const Duration(seconds: 5),
+      (_) {
+        setState(() {
+          matchedRecipes =
+              matchRecipes(
+                  mockRecipeList,
+                  mockUserIngredients);
+        });
+      },
+    );
+  }
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Match Results')),
+      appBar: AppBar(
+        backgroundColor: primaryGreen,
+        title: const Text('Match Results'),
+        centerTitle: true,
+      ),
+      
+    
       body: ListView.builder(
+        
         padding: const EdgeInsets.all(16),
         itemCount: matchedRecipes.length,
         itemBuilder: (context, index) {
           final recipe = matchedRecipes[index];
 
           return Padding(
+            
+            
             padding: const EdgeInsets.only(bottom: 16),
             child: RecipeCard(
               title: recipe.title,
@@ -56,14 +87,19 @@ class _MatchMenuPageState extends State<MatchMenuPage> {
                 });
               },
 
-              onTap: () {
-                Navigator.push(
+              onTap: () async {
+                await Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (_) =>
-                        RecipeDetailPage(recipe: recipe),
+                    builder: (_) => RecipeDetailPage(recipe: recipe),
                   ),
                 );
+
+                /// 🔥 refresh หลังกลับมา
+                setState(() {
+                  matchedRecipes =
+                      matchRecipes(mockRecipeList, mockUserIngredients);
+                });
               },
             ),
           );

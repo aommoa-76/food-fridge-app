@@ -47,11 +47,32 @@ class Recipe {
     }
 
     /// 🔹 แยกขั้นตอนจาก instructions
-    List<String> steps = json['strInstructions']
-        .toString()
-        .split(RegExp(r'\r\n|\n'))
-        .where((s) => s.trim().isNotEmpty)
-        .toList();
+    List<String> steps = [];
+
+    final instructions = json['strInstructions'] ?? '';
+
+    if (instructions.isNotEmpty) {
+      // 🔹 ทำ newline ให้เหมือนกัน
+      String normalized = instructions
+          .replaceAll('\r\n', '\n')
+          .replaceAll('\r', '\n');
+
+      // 🔹 split
+      List<String> rawSteps = normalized.split('\n');
+
+      for (var s in rawSteps) {
+        String step = s.trim();
+
+        if (step.isEmpty) continue;
+
+        // 🔹 ลบ "step 1", "1", "2", etc.
+        step = step.replaceFirst(RegExp(r'^(step\s*\d+|\d+)[\.\)]?\s*', caseSensitive: false), '');
+
+        if (step.isNotEmpty) {
+          steps.add(step);
+        }
+      }
+    }
 
     return Recipe(
       idMeal: json['idMeal'] ?? '',

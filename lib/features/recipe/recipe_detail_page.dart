@@ -1,134 +1,107 @@
 import 'package:flutter/material.dart';
 import '../../core/models/recipe.dart';
-import '../../core/state/favorites_state.dart';
 
-class RecipeDetailPage extends StatefulWidget {
+import 'widgets/recipe_hero_image.dart';
+import 'widgets/recipe_info_cards.dart';
+import 'widgets/ingredient_card.dart';
+import 'widgets/step_tile.dart';
+import 'utils/launch_youtube.dart';
+
+class RecipeDetailPage extends StatelessWidget {
   final Recipe recipe;
 
   const RecipeDetailPage({super.key, required this.recipe});
 
   @override
-  State<RecipeDetailPage> createState() =>
-      _RecipeDetailPageState();
-}
-
-class _RecipeDetailPageState
-    extends State<RecipeDetailPage> {
-  final FavoritesState _favoritesState =
-      FavoritesState.instance;
-
-  @override
   Widget build(BuildContext context) {
-    final recipe = widget.recipe;
-
-    final isFav =
-        _favoritesState.isFavorite(recipe.idMeal);
-
     return Scaffold(
+      backgroundColor: const Color(0xFFF6F8F6),
+
       appBar: AppBar(
-        title: const Text("Cooking Guide"),
-        actions: [
-          IconButton(
-            icon: Icon(
-              isFav
-                  ? Icons.favorite
-                  : Icons.favorite_border,
-              color: Colors.red,
-            ),
-            onPressed: () {
-              setState(() {
-                _favoritesState
-                    .toggleFavorite(recipe);
-              });
-            },
-          )
-        ],
+        backgroundColor: Colors.white.withOpacity(0.9),
+        elevation: 0,
+        leading: const BackButton(color: Colors.black),
+        title: const Text(
+          "Cooking Guide",
+          style: TextStyle(color: Colors.black),
+        ),
+        centerTitle: true,
       ),
+
       body: SingleChildScrollView(
         child: Column(
-          crossAxisAlignment:
-              CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            /// 🖼️ Hero Image
-            Image.network(
-              recipe.imageUrl,
-              height: 250,
-              width: double.infinity,
-              fit: BoxFit.cover,
+
+            /// HERO
+            RecipeHeroImage(recipe: recipe),
+
+            /// TITLE
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Text(
+                recipe.title,
+                style: const TextStyle(
+                    fontSize: 30, fontWeight: FontWeight.bold),
+              ),
             ),
 
+            /// INFO CARDS
             Padding(
-              padding:
-                  const EdgeInsets.all(16.0),
-              child: Column(
-                crossAxisAlignment:
-                    CrossAxisAlignment.start,
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Row(
                 children: [
-                  /// Title
-                  Text(
-                    recipe.title,
-                    style: const TextStyle(
-                      fontSize: 28,
-                      fontWeight:
-                          FontWeight.bold,
-                    ),
+                  RecipeInfoCard(
+                    title: "YouTube",
+                    value: "Watch Video",
+                    onTap: () => openYoutube(recipe.youtubeUrl),
                   ),
-
-                  const SizedBox(height: 16),
-
-                  /// Ingredients
-                  const Text(
-                    "Ingredients",
-                    style: TextStyle(
-                        fontSize: 22,
-                        fontWeight:
-                            FontWeight.bold),
+                  RecipeInfoCard(
+                    title: "Area",
+                    value: recipe.area,
                   ),
-
-                  const SizedBox(height: 12),
-
-                  ...recipe.ingredients
-                      .map(
-                        (e) => Padding(
-                          padding:
-                              const EdgeInsets
-                                  .only(
-                                  bottom: 8),
-                          child: Text("• $e"),
-                        ),
-                      )
-                      .toList(),
-
-                  const SizedBox(height: 24),
-
-                  /// Steps
-                  const Text(
-                    "Cooking Steps",
-                    style: TextStyle(
-                        fontSize: 22,
-                        fontWeight:
-                            FontWeight.bold),
-                  ),
-
-                  const SizedBox(height: 12),
-
-                  ...recipe.steps
-                      .asMap()
-                      .entries
-                      .map(
-                        (entry) => Padding(
-                          padding:
-                              const EdgeInsets
-                                  .only(
-                                  bottom: 12),
-                          child: Text(
-                              "${entry.key + 1}. ${entry.value}"),
-                        ),
-                      )
-                      .toList(),
                 ],
               ),
             ),
+
+            const SizedBox(height: 24),
+
+            /// INGREDIENTS
+            const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 16),
+              child: Text(
+                "Ingredients",
+                style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+              ),
+            ),
+
+            const SizedBox(height: 12),
+
+            ...recipe.ingredients.map(
+              (e) => IngredientCard(ingredient: e),
+            ),
+
+            const SizedBox(height: 32),
+
+            /// STEPS
+            const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 16),
+              child: Text(
+                "Cooking Steps",
+                style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+              ),
+            ),
+
+            const SizedBox(height: 16),
+
+            ...recipe.steps.asMap().entries.map(
+              (entry) => StepTile(
+                step: entry.key + 1,
+                text: entry.value,
+              ),
+            ),
+
+            const SizedBox(height: 40),
           ],
         ),
       ),
